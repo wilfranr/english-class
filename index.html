@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inglés conversacional</title>
+<style>
+  :root {
+    --bg: #f6f3fa; --card: #fff; --text: #2b2433; --muted: #7a7086;
+    --accent: #7b3f98; --accent-soft: #efe3f6; --border: #e0d4ea; --mark: #ffe48a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17131c; --card: #221c29; --text: #eee8f3; --muted: #a396b0;
+      --accent: #c48be0; --accent-soft: #33283d; --border: #3a2f45; --mark: #6b5a12;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { margin: 0 0 16px; font-size: 1.7rem; }
+
+  .tabs { display: flex; gap: 6px; border-bottom: 2px solid var(--border); overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none; position: sticky; top: 0; z-index: 4; background: var(--bg); }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { border: none; background: none; color: var(--muted); font: inherit; font-weight: 600;
+    padding: 10px 16px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+    white-space: nowrap; border-radius: 8px 8px 0 0; }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected=true] { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .panel[hidden] { display: none; }
+  .sub { color: var(--muted); margin: 14px 0 0; }
+  .controls { position: sticky; top: var(--tabs-h, 48px); background: var(--bg); padding: 12px 0;
+    z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  input[type=search] { flex: 1 1 260px; padding: 12px 14px; font-size: 1rem; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--card); color: var(--text); }
+  input[type=search]:focus { outline: 2px solid var(--accent); }
+  button, label.toggle { font: inherit; cursor: pointer; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); border-radius: 10px; padding: 10px 14px; }
+  button:hover, label.toggle:hover { border-color: var(--accent); }
+  .toggle { display: inline-flex; gap: 8px; align-items: center; user-select: none; }
+  .count { color: var(--muted); font-size: .9rem; flex-basis: 100%; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card);
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; }
+  th { background: var(--accent-soft); color: var(--accent); font-size: .85rem;
+    text-transform: uppercase; letter-spacing: .04em; }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+  td.base { font-weight: 600; }
+  td.es { color: var(--muted); }
+  mark { background: var(--mark); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .say, .copy { padding: 4px 8px; border-radius: 8px; line-height: 1; }
+  .hide-forms td.f { color: transparent; background: var(--accent-soft); cursor: pointer;
+    border-radius: 6px; user-select: none; }
+  .hide-forms td.f.shown { color: inherit; background: none; user-select: auto; }
+  .empty { text-align: center; padding: 40px 0; color: var(--muted); display: none; }
+
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .seg-btn { border: none; border-radius: 0; background: var(--card); padding: 10px 16px; }
+  .seg-btn[aria-pressed=true] { background: var(--accent); color: var(--bg); font-weight: 600; }
+  .grammar .g-title { margin: 20px 0 12px; font-size: 1.3rem; }
+  .g-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px; }
+  .g-card h3 { margin: 0 0 8px; color: var(--accent); font-size: 1.1rem; }
+  .g-card h3 small { color: var(--muted); font-weight: 400; }
+  .g-card p { margin: 8px 0; }
+  .g-label { font-weight: 600; margin-top: 14px !important; }
+  code { background: var(--accent-soft); color: var(--accent); padding: 2px 6px; border-radius: 6px;
+    font-size: .9em; margin-left: 6px; }
+  .ex { border-left: 3px solid var(--accent); padding: 4px 10px; margin: 6px 0; }
+  .ex span { display: block; color: var(--muted); font-size: .92rem; }
+  .g-table { margin: 4px 0 8px; }
+  .g-card ul { margin: 8px 0; padding-left: 20px; }
+  .g-bad { color: #c0392b; } .g-good { color: #1e8e4e; }
+  @media (prefers-color-scheme: dark) { .g-bad { color: #ff8a7a; } .g-good { color: #6fd79a; } }
+  .muted-p { color: var(--muted); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { padding: 6px 12px; border-radius: 999px; font-size: .9rem; }
+  .chip[aria-pressed=true] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .badge { font-size: .75rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+    background: var(--accent-soft); color: var(--accent); }
+  .badge.g3 { background: transparent; border: 1px dashed var(--border); color: var(--muted); }
+  .to-top { position: fixed; right: 18px; bottom: 18px; z-index: 5; width: 46px; height: 46px;
+    border-radius: 50%; padding: 0; font-size: 1.3rem; background: var(--accent); color: var(--bg);
+    border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .to-top.show { opacity: 1; pointer-events: auto; }
+  .note-box { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px;
+    margin: 0 0 12px; font-size: .95rem; }
+
+  .cat { margin: 22px 0 8px; font-size: 1.05rem; color: var(--accent); }
+  .phrase { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; }
+  .phrase .txt { flex: 1; }
+  .phrase .en { font-weight: 600; }
+  .phrase .es-t { color: var(--muted); font-size: .95rem; }
+  .phrase .tip { font-size: .85rem; color: var(--muted); margin-top: 4px; font-style: italic; }
+  .phrase .btns { display: flex; gap: 6px; }
+
+  @media (max-width: 640px) {
+    th, td { padding: 8px 6px; font-size: .9rem; }
+    .tab { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Inglés conversacional</h1>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="irregular" aria-selected="true">Verbos irregulares</button>
+    <button class="tab" role="tab" data-tab="regular" aria-selected="false">Verbos regulares</button>
+    <button class="tab" role="tab" data-tab="phrases" aria-selected="false">Frases más usadas</button>
+    <button class="tab" role="tab" data-tab="grammar" aria-selected="false">Gramática</button>
+  </div>
+
+  <!-- IRREGULARES -->
+  <section class="panel" id="panel-irregular" role="tabpanel">
+    <div class="controls">
+      <input type="search" data-search="irregular" placeholder="Buscar… (ej. went, comprar, sung)" autocomplete="off">
+      <div class="seg" role="group" aria-label="Tiempo verbal">
+        <button class="seg-btn" data-tense="past" aria-pressed="true">Pasado</button>
+        <button class="seg-btn" data-tense="future" aria-pressed="false">Futuro</button>
+      </div>
+      <label class="toggle" id="practice-label"><input type="checkbox" id="practice"> Modo práctica</label>
+      <button id="reveal" hidden>Mostrar todo</button>
+      <div class="count" id="count-irregular"></div>
+    </div>
+    <div class="note-box" id="future-note-irregular" hidden>
+      <b>Futuro:</b> todos los verbos, regulares o irregulares, usan la forma base.
+      <b>will + verbo</b> para decisiones o predicciones (I will go) ·
+      <b>be going to + verbo</b> para planes (I'm going to go).
+    </div>
+    <table id="table-irregular">
+      <thead id="head-irregular"></thead>
+      <tbody id="body-irregular"></tbody>
+    </table>
+    <div class="empty" id="empty-irregular">No se encontraron verbos 🔍</div>
+  </section>
+
+  <!-- REGULARES -->
+  <section class="panel" id="panel-regular" role="tabpanel" hidden>
+    <p class="sub" id="sub-regular">Los verbos regulares forman el pasado y el participio con <b>-ed</b> o <b>-d</b> (los dos son iguales).</p>
+    <div class="controls">
+      <input type="search" data-search="regular" placeholder="Buscar… (ej. worked, caminar)" autocomplete="off">
+      <div class="seg" role="group" aria-label="Tiempo verbal">
+        <button class="seg-btn" data-tense="past" aria-pressed="true">Pasado</button>
+        <button class="seg-btn" data-tense="future" aria-pressed="false">Futuro</button>
+      </div>
+      <div class="chips" id="chips-regular">
+        <button class="chip" data-g="all" aria-pressed="true">Todos</button>
+        <button class="chip" data-g="1" aria-pressed="false">1 · -ed</button>
+        <button class="chip" data-g="2" aria-pressed="false">2 · -d</button>
+        <button class="chip" data-g="3" aria-pressed="false">Extra</button>
+      </div>
+      <div class="count" id="count-regular"></div>
+    </div>
+    <div class="note-box" id="rules"><b>Patrones del libro:</b>
+      <b>1</b> agrega <b>-ed</b> (act → acted) ·
+      <b>2</b> si termina en <i>e</i>, agrega solo <b>-d</b> (assemble → assembled) ·
+      <b>Extra</b>: verbos que no salen en esas páginas; incluye casos como consonante + <i>y</i> → <b>-ied</b> (study → studied) y duplicar la consonante (stop → stopped).
+    </div>
+    <div class="note-box" id="future-note-regular" hidden>
+      <b>Futuro:</b> todos los verbos, regulares o irregulares, usan la forma base.
+      <b>will + verbo</b> para decisiones o predicciones (I will go) ·
+      <b>be going to + verbo</b> para planes (I'm going to go).
+    </div>
+    <table id="table-regular">
+      <thead id="head-regular"></thead>
+      <tbody id="body-regular"></tbody>
+    </table>
+    <div class="empty" id="empty-regular">No se encontraron verbos 🔍</div>
+  </section>
+
+  <!-- FRASES -->
+  <section class="panel" id="panel-phrases" role="tabpanel" hidden>
+    <div class="controls">
+      <input type="search" data-search="phrases" placeholder="Buscar… (ej. repetir, would like, ayer)" autocomplete="off">
+      <div class="count" id="count-phrases"></div>
+    </div>
+    <div id="body-phrases"></div>
+    <div class="empty" id="empty-phrases">No se encontraron frases 🔍</div>
+  </section>
+
+  <!-- GRAMÁTICA -->
+  <section class="panel grammar" id="panel-grammar" role="tabpanel" hidden>
+    <h2 class="g-title">Pasado simple vs. participio pasado</h2>
+
+    <div class="g-card">
+      <h3>Pasado simple <small>(simple past)</small></h3>
+      <p>Una acción que <b>ya terminó</b>, en un momento definido. Equivale al pretérito en español ("comí", "fui"). Va <b>solo</b>, sin verbo auxiliar, y suele llevar <i>yesterday, last week, in 2020, two days ago</i>.</p>
+      <div class="ex"><b>I went</b> to the park yesterday. <span>Ayer fui al parque.</span></div>
+      <div class="ex">She <b>bought</b> a car last year. <span>Ella compró un carro el año pasado.</span></div>
+    </div>
+
+    <div class="g-card">
+      <h3>Participio pasado <small>(past participle)</small></h3>
+      <p><b>No se usa solo.</b> Siempre necesita un auxiliar (<i>have, has, had, be</i>). Tiene tres usos:</p>
+      <p class="g-label">1. Present perfect <code>have / has + participio</code></p>
+      <p>Una acción pasada conectada con el presente, o sin tiempo definido ("he comido", "ha ido").</p>
+      <div class="ex">I <b>have gone</b> to that restaurant before. <span>He ido a ese restaurante antes.</span></div>
+      <div class="ex">She <b>has bought</b> a car. <span>Ella ha comprado un carro.</span></div>
+      <p class="g-label">2. Past perfect <code>had + participio</code></p>
+      <p>Una acción anterior a otra acción pasada.</p>
+      <div class="ex">I <b>had eaten</b> when he arrived. <span>Yo ya había comido cuando él llegó.</span></div>
+      <p class="g-label">3. Voz pasiva <code>be + participio</code></p>
+      <p>Cuando importa lo que recibe la acción.</p>
+      <div class="ex">The window <b>was broken</b>. <span>La ventana fue rota / estaba rota.</span></div>
+    </div>
+
+    <div class="g-card">
+      <h3>Comparación</h3>
+      <table class="g-table">
+        <thead><tr><th>Base</th><th>Pasado simple</th><th>Participio</th></tr></thead>
+        <tbody>
+          <tr><td>go</td><td><b>went</b></td><td><b>gone</b></td></tr>
+          <tr><td>eat</td><td><b>ate</b></td><td><b>eaten</b></td></tr>
+          <tr><td>see</td><td><b>saw</b></td><td><b>seen</b></td></tr>
+          <tr><td>write</td><td><b>wrote</b></td><td><b>written</b></td></tr>
+          <tr><td>buy</td><td><b>bought</b></td><td><b>bought</b></td></tr>
+          <tr><td>work <i>(regular)</i></td><td><b>worked</b></td><td><b>worked</b></td></tr>
+        </tbody>
+      </table>
+      <p>Con los <b>regulares</b> las dos formas son iguales (terminan en <b>-ed</b>). La diferencia aparece en los <b>irregulares</b>, por eso tienen tres columnas en la tab de verbos. Algunos irregulares también tienen las dos formas iguales (<i>buy → bought → bought</i>, <i>cut → cut → cut</i>).</p>
+    </div>
+
+    <div class="g-card">
+      <h3>¿Cuál uso?</h3>
+      <ul>
+        <li>Verbo <b>solo</b> → pasado simple: <i>I <b>saw</b> him.</i></li>
+        <li>Después de <b>have, has, had o be</b> → participio: <i>I have <b>seen</b> him.</i></li>
+      </ul>
+      <p class="g-bad">❌ I have <s>went</s> &nbsp;·&nbsp; I <s>seen</s> him</p>
+      <p class="g-good">✅ I have <b>gone</b> &nbsp;·&nbsp; I <b>saw</b> him</p>
+      <p class="muted-p">Es la confusión más frecuente en irregulares como <i>go, see, eat, write</i>.</p>
+    </div>
+  </section>
+</main>
+<button class="to-top" id="to-top" title="Subir" aria-label="Subir al inicio">↑</button>
+
+<script>
+/* ---------- DATOS ---------- */
+const IRREGULAR = [
+  ['be','was/were','been','ser / estar'],
+  ['beat','beat','beaten','golpear / vencer'],
+  ['become','became','become','convertirse en'],
+  ['bend','bent','bent','doblar'],
+  ['begin','began','begun','comenzar'],
+  ['bleed','bled','bled','sangrar'],
+  ['break','broke','broken','romper'],
+  ['bring','brought','brought','traer'],
+  ['build','built','built','construir'],
+  ['buy','bought','bought','comprar'],
+  ['catch','caught','caught','atrapar'],
+  ['choose','chose','chosen','elegir'],
+  ['come','came','come','venir'],
+  ['cut','cut','cut','cortar'],
+  ['do','did','done','hacer'],
+  ['draw','drew','drawn','dibujar'],
+  ['drink','drank','drunk','beber'],
+  ['drive','drove','driven','conducir'],
+  ['eat','ate','eaten','comer'],
+  ['fall','fell','fallen','caer'],
+  ['feed','fed','fed','alimentar'],
+  ['fly','flew','flown','volar'],
+  ['get','got','gotten','obtener / conseguir'],
+  ['give','gave','given','dar'],
+  ['go','went','gone','ir'],
+  ['grow','grew','grown','crecer'],
+  ['hang','hung','hung','colgar'],
+  ['have','had','had','tener / haber'],
+  ['hit','hit','hit','golpear'],
+  ['hold','held','held','sostener'],
+  ['hurt','hurt','hurt','lastimar / doler'],
+  ['know','knew','known','saber / conocer'],
+  ['leave','left','left','salir / dejar'],
+  ['let','let','let','permitir / dejar'],
+  ['make','made','made','hacer / fabricar'],
+  ['meet','met','met','conocer / encontrarse'],
+  ['pay','paid','paid','pagar'],
+  ['put','put','put','poner'],
+  ['read','read','read','leer'],
+  ['rewrite','rewrote','rewritten','reescribir'],
+  ['ring','rang','rung','sonar / llamar'],
+  ['run','ran','run','correr'],
+  ['say','said','said','decir'],
+  ['see','saw','seen','ver'],
+  ['sell','sold','sold','vender'],
+  ['set','set','set','establecer / colocar'],
+  ['shoot','shot','shot','disparar'],
+  ['sing','sang','sung','cantar'],
+  ['sit','sat','sat','sentarse'],
+  ['sleep','slept','slept','dormir'],
+  ['speak','spoke','spoken','hablar'],
+  ['stand','stood','stood','estar de pie / pararse'],
+  ['sweep','swept','swept','barrer'],
+  ['swim','swam','swum','nadar'],
+  ['swing','swung','swung','balancear / columpiar'],
+  ['take','took','taken','tomar / llevar'],
+  ['teach','taught','taught','enseñar'],
+  ['throw','threw','thrown','lanzar'],
+  ['understand','understood','understood','entender'],
+  ['withdraw','withdrew','withdrawn','retirar'],
+  ['write','wrote','written','escribir'],
+];
+
+// Verbos del libro: patrón 1 (+ed) y patrón 2 (+d). Formato "base|español".
+const REGULAR_P1 = `act|actuar
+add|añadir / sumar
+answer|responder
+appear|aparecer
+ask|preguntar / pedir
+assist|asistir / ayudar
+attack|atacar
+attend|asistir a
+bank|hacer operaciones bancarias
+board|abordar
+boil|hervir
+box|empacar en cajas
+brainstorm|hacer lluvia de ideas
+broil|asar (a la parrilla del horno)
+brush|cepillar
+burn|quemar
+burp|eructar
+carpool|compartir auto
+cash|cobrar (un cheque)
+check|revisar
+clean|limpiar
+clear|despejar / limpiar (la mesa)
+collect|recoger / coleccionar
+comb|peinar
+construct|construir
+cook|cocinar
+correct|corregir
+cough|toser
+cover|cubrir
+crash|chocar
+cross (out)|tachar
+deliver|entregar
+deposit|depositar
+design|diseñar
+discuss|discutir / hablar de
+dress|vestir
+drill|taladrar
+dust|sacudir el polvo
+edit|editar
+end|terminar
+enter|entrar / ingresar
+establish|establecer
+explain|explicar
+faint|desmayarse
+fasten|abrochar / sujetar
+fix|arreglar
+floss|usar hilo dental
+fold|doblar
+follow|seguir
+form|formar
+grill|asar a la parrilla
+guard|vigilar / custodiar
+hand (in)|entregar (una tarea)
+help|ayudar
+insert|insertar
+invent|inventar
+iron|planchar
+kick|patear
+land|aterrizar
+leak|gotear / filtrarse
+learn|aprender
+lengthen|alargar
+lift|levantar
+listen|escuchar
+load|cargar
+look|mirar / parecer
+lower|bajar
+mark|marcar
+match|emparejar / combinar
+mix|mezclar
+mow|cortar el césped
+obey|obedecer
+open|abrir
+paint|pintar
+park|estacionar
+pass|pasar
+peel|pelar
+plant|plantar
+play|jugar / tocar
+polish|pulir / lustrar
+pour|verter / servir
+print|imprimir
+reach|alcanzar / llegar
+record|grabar / registrar
+register|registrar / inscribirse
+relax|relajarse
+repair|reparar
+repeat|repetir
+request|solicitar
+respond|responder
+rest|descansar
+return|regresar / devolver
+roast|asar al horno
+rock|mecer / balancear
+saute|saltear
+scratch|rascar / rayar
+seat|sentar
+select|seleccionar
+shorten|acortar
+sign|firmar
+simmer|hervir a fuego lento
+sort|clasificar
+spell|deletrear
+sprain|torcerse (esguince)
+steam|cocinar al vapor
+stow|guardar / estibar
+stretch|estirar
+surf|surfear / navegar
+swallow|tragar
+talk|hablar / conversar
+turn|girar / voltear
+twist|torcer
+unload|descargar
+vacuum|aspirar
+vomit|vomitar
+walk|caminar
+wash|lavar
+watch|ver / observar
+wax|encerar / depilar con cera
+weed|desyerbar
+whiten|blanquear
+work|trabajar`;
+const REGULAR_P2 = `assemble|ensamblar
+bake|hornear
+balance|equilibrar
+barbecue|asar (barbacoa)
+bathe|bañar(se)
+bounce|rebotar
+browse|hojear / navegar
+bruise|magullar
+bubble|burbujear
+change|cambiar
+circle|encerrar en un círculo
+close|cerrar
+combine|combinar
+declare|declarar
+describe|describir
+dislocate|dislocar
+dive|bucear / zambullirse
+dribble|driblar / gotear
+enforce|hacer cumplir
+erase|borrar
+examine|examinar
+exchange|intercambiar
+exercise|hacer ejercicio
+experience|experimentar / vivir
+file|archivar
+gargle|hacer gárgaras
+grate|rallar
+hire|contratar
+manage|manejar / administrar
+measure|medir
+microwave|calentar en microondas
+move|mover / mudarse
+nurse|cuidar / amamantar
+operate|operar
+organize|organizar
+overdose|tomar una sobredosis
+practice|practicar
+prepare|preparar
+produce|producir
+pronounce|pronunciar
+prune|podar
+raise|levantar / criar
+rake|rastrillar
+recite|recitar
+recycle|reciclar
+remove|quitar / remover
+revise|revisar / corregir
+rinse|enjuagar
+save|guardar / ahorrar
+scrape|raspar
+serve|servir
+share|compartir
+shave|afeitar(se)
+slice|rebanar
+sneeze|estornudar
+state|declarar / afirmar
+style|peinar / dar estilo
+supervise|supervisar
+translate|traducir
+type|teclear / escribir a máquina
+underline|subrayar
+unscramble|ordenar (letras)
+use|usar
+vote|votar
+wheeze|respirar con silbido`;
+// Extras que no aparecen en las páginas del libro (patrones 3 y 4 u otros): [base, pasado, español]
+const REGULAR_EXTRA = `arrive|arrived|llegar
+call|called|llamar
+carry|carried|cargar / llevar
+copy|copied|copiar
+cry|cried|llorar
+dance|danced|bailar
+decide|decided|decidir
+enjoy|enjoyed|disfrutar
+finish|finished|terminar
+hope|hoped|esperar (tener esperanza)
+invite|invited|invitar
+join|joined|unirse
+jump|jumped|saltar
+kiss|kissed|besar
+like|liked|gustar
+live|lived|vivir
+love|loved|amar / encantar
+marry|married|casarse
+miss|missed|extrañar / perder
+need|needed|necesitar
+order|ordered|pedir (en un restaurante)
+phone|phoned|telefonear
+prefer|preferred|preferir
+push|pushed|empujar
+rain|rained|llover
+receive|received|recibir
+remember|remembered|recordar
+rent|rented|alquilar
+shop|shopped|ir de compras
+show|showed|mostrar
+smile|smiled|sonreír
+start|started|empezar
+stay|stayed|quedarse
+stop|stopped|detener / parar
+study|studied|estudiar
+text|texted|enviar mensaje de texto
+travel|traveled|viajar
+try|tried|intentar / probar
+visit|visited|visitar
+wait|waited|esperar
+want|wanted|querer
+worry|worried|preocuparse`;
+
+// Arma [base, pasado, español, grupo]. "hand (in)" → "handed (in)"
+function pastOf(base, suffix) {
+  const m = base.match(/^(\S+)( \(.*\))?$/);
+  return m[1] + suffix + (m[2] || '');
+}
+const REGULAR = [
+  ...REGULAR_P1.split('\n').map(l => { const [b, es] = l.split('|'); return [b, pastOf(b, 'ed'), es, '1']; }),
+  ...REGULAR_P2.split('\n').map(l => { const [b, es] = l.split('|'); return [b, pastOf(b, 'd'), es, '2']; }),
+  ...REGULAR_EXTRA.split('\n').map(l => [...l.split('|'), '3']),
+];
+
+// categoría → [español, inglés, nota opcional]
+const PHRASES = [
+  ['Pedir aclaración o repetición', [
+    ['No entendí.', "I didn't understand. / I didn't catch that."],
+    ['No entendí la última palabra.', "I didn't catch the last word."],
+    ['No entendí la segunda palabra.', "I didn't catch the second word."],
+    ['¿Podrías repetir eso, por favor?', 'Could you repeat that, please?'],
+    ['¿Qué significa [palabra]?', 'What does [word] mean?'],
+    ['¿Cómo se dice [palabra] en inglés?', 'How do you say [word] in English?'],
+    ['¿Podrías hablar un poco más despacio?', 'Could you speak a little slower, please?'],
+    ['¿Cómo se escribe?', 'How do you spell that?'],
+    ['¿Puedes darme un ejemplo?', 'Can you give me an example?'],
+  ]],
+  ['Hablar del pasado (ayer / el fin de semana pasado)', [
+    ['Ayer hice...', 'Yesterday I did... / Yesterday I made...',
+      'Usa "did" para actividades o tareas ("Yesterday I did some research") y "made" para crear cosas ("Yesterday I made lunch").'],
+    ['Ayer fui a...', 'Yesterday I went to...'],
+    ['Ayer fuimos a...', 'Yesterday we went to...'],
+    ['Hicimos...', 'We did... / We made...'],
+    ['El fin de semana pasado estuve...', 'Last weekend I was...'],
+    ['El fin de semana pasado fuimos a...', 'Last weekend we went to...'],
+  ]],
+  ['Hablar del futuro y planes', [
+    ['Este fin de semana iremos a...', 'This weekend we will go to... / This weekend we are going to...'],
+    ['Haremos...', 'We will do... / We are going to do...'],
+    ['Queremos ir a...', 'We want to go to...'],
+    ['Queremos hacer...', 'We want to do...'],
+    ['Tengo planeado...', "I'm planning to..."],
+    ['Vamos a...', 'We are going to...'],
+  ]],
+  ['Gustos, preferencias y deseos', [
+    ['Nos gusta ir a comer a...', 'We like going out to eat at... / We like to eat at...'],
+    ['Me gustaría...', "I would like to... / I'd like to...",
+      'La contracción "I\'d like to" es la forma más común al hablar.'],
+    ['Nos gustaría...', "We would like to... / We'd like to..."],
+    ['Quisiera...', 'I would like to...'],
+    ['Quisiéramos...', 'We would like to...'],
+    ['Prefiero... en lugar de...', 'I prefer... instead of...'],
+  ]],
+  ['Describir personas (del video A1 "Who is in your new class?")', [
+    ['¿Cómo está tu nueva clase de japonés?', 'How is your new Japanese class?'],
+    ['Es genial. Somos un grupo pequeño de ocho.', "It's great. We are a small group of eight."],
+    ['¿Y quién es el profesor?', 'And who is the teacher?'],
+    ['Se llama...', 'His name is... / Her name is...'],
+    ['Es de Japón. / Es de México.', 'He is from Japan. / She is from Mexico.'],
+    ['Tiene 45 años.', "He's 45 years old. / She's 20 years old."],
+    ['Es muy amable y divertido.', "He's very kind and funny."],
+    ['Le encanta la música.', 'He loves music.'],
+    ['A veces toca la guitarra en clase.', 'He sometimes plays the guitar in class.',
+      '"Sometimes" va antes del verbo principal.'],
+    ['¿Habla inglés?', 'Does he speak English?'],
+    ['Habla inglés perfecto.', 'He speaks perfect English.'],
+    ['También puede hablar español.', 'He can speak Spanish, too.'],
+    ['Algunos estudiantes son de otros países.', 'Some students are American and a few are from other countries.'],
+    ['Cuéntame sobre ellos.', 'Please tell me about them.'],
+    ['Es estudiante universitaria.', "She's a university student."],
+    ['Es mesero. / Es enfermera.', 'He is a waiter. / She is a nurse.'],
+    ['Le gusta bailar.', 'She likes dancing.'],
+    ['Quiere aprender japonés porque...', 'He wants to learn Japanese because...'],
+    ['Quiere viajar allá algún día.', 'She wants to travel there one day.'],
+    ['¿Quién más?', 'Who else?'],
+    ['Suena interesante.', 'That sounds interesting.'],
+    ['Ya veo.', 'Oh, I see.'],
+    ['Con he / she / it, el verbo lleva -s.', 'He likes. She loves. He speaks. She wants.',
+      'Es el error más común al describir a otras personas: no olvides la -s en presente.'],
+  ]],
+  ['Básicos del día a día (añadidos)', [
+    ['¿Cómo estás?', 'How are you? / How are you doing?'],
+    ['Bien, gracias. ¿Y tú?', "I'm good, thanks. And you?"],
+    ['Mucho gusto.', 'Nice to meet you.'],
+    ['Con permiso / Disculpa.', 'Excuse me.'],
+    ['Lo siento.', "I'm sorry."],
+    ['No sé.', "I don't know."],
+    ['Creo que sí / Creo que no.', "I think so. / I don't think so."],
+    ['Estoy de acuerdo.', 'I agree.'],
+    ['¿Me puedes ayudar?', 'Can you help me, please?'],
+    ['Un momento, por favor.', 'Just a moment, please.'],
+    ['Mi inglés no es muy bueno todavía.', "My English isn't very good yet."],
+  ]],
+];
+
+/* ---------- UTILIDADES ---------- */
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = id => document.getElementById(id);
+
+function hl(text, q) {
+  if (!q) return esc(text);
+  const i = norm(text).indexOf(q);
+  if (i < 0) return esc(text);
+  return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+}
+const matches = (fields, q) => !q || fields.some(f => norm(f).includes(q));
+
+function say(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  speechSynthesis.speak(u);
+}
+
+/* ---------- RENDER ---------- */
+const btn = (cls, label, title, data) =>
+  `<button class="${cls}" data-t="${esc(data)}" title="${title}" aria-label="${title}">${label}</button>`;
+
+const HEAD = {
+  past: {
+    irregular: '<tr><th>Base</th><th>Pasado</th><th>Participio</th><th>Español</th><th></th></tr>',
+    regular: '<tr><th>Base</th><th>Pasado / Participio</th><th>Español</th><th>Patrón</th><th></th></tr>',
+  },
+  future: '<tr><th>Base</th><th>Will</th><th>Going to</th><th>Español</th><th></th></tr>',
+};
+let tense = 'past';
+
+const stripParen = s => s.replace(/ \(.*\)/, '');
+
+function futureRow(base, es, q) {
+  const will = 'will ' + base, going = 'going to ' + base;
+  return `
+    <tr>
+      <td class="base">${hl(base, q)}</td>
+      <td>${hl(will, q)}</td>
+      <td>${hl(going, q)}</td>
+      <td class="es">${hl(es, q)}</td>
+      <td>${btn('say', '🔊', 'Escuchar', 'I will ' + stripParen(base) + '. I am going to ' + stripParen(base))}</td>
+    </tr>`;
+}
+
+function renderIrregular(q) {
+  $('head-irregular').innerHTML = tense === 'future' ? HEAD.future : HEAD.past.irregular;
+  const rows = IRREGULAR.filter(v => matches(tense === 'future' ? [v[0], v[3], 'will', 'going to'] : v, q));
+  $('body-irregular').innerHTML = rows.map(v => tense === 'future' ? futureRow(v[0], v[3], q) : `
+    <tr>
+      <td class="base">${hl(v[0], q)}</td>
+      <td class="f">${hl(v[1], q)}</td>
+      <td class="f">${hl(v[2], q)}</td>
+      <td class="es">${hl(v[3], q)}</td>
+      <td>${btn('say', '🔊', 'Escuchar', v[0] + '. ' + v[1].replace('/', ', ') + '. ' + v[2])}</td>
+    </tr>`).join('');
+  finish('irregular', rows.length, IRREGULAR.length, 'verbos');
+}
+
+const GROUP_LABEL = { '1': '1 · -ed', '2': '2 · -d', '3': 'Extra' };
+let regularGroup = 'all';
+
+function renderRegular(q) {
+  $('head-regular').innerHTML = tense === 'future' ? HEAD.future : HEAD.past.regular;
+  const inGroup = v => tense === 'future' || regularGroup === 'all' || v[3] === regularGroup;
+  const rows = REGULAR.filter(v => inGroup(v) && matches(tense === 'future' ? [v[0], v[2], 'will', 'going to'] : v.slice(0, 3), q));
+  $('body-regular').innerHTML = rows.map(v => tense === 'future' ? futureRow(v[0], v[2], q) : `
+    <tr>
+      <td class="base">${hl(v[0], q)}</td>
+      <td>${hl(v[1], q)}</td>
+      <td class="es">${hl(v[2], q)}</td>
+      <td><span class="badge g${v[3]}">${GROUP_LABEL[v[3]]}</span></td>
+      <td>${btn('say', '🔊', 'Escuchar', stripParen(v[0]) + '. ' + stripParen(v[1]))}</td>
+    </tr>`).join('');
+  finish('regular', rows.length, REGULAR.length, 'verbos');
+}
+
+function renderPhrases(q) {
+  let shown = 0, total = 0, html = '';
+  for (const [cat, list] of PHRASES) {
+    total += list.length;
+    const hits = list.filter(p => matches(p, q));
+    if (!hits.length) continue;
+    shown += hits.length;
+    html += `<h2 class="cat">${esc(cat)}</h2>` + hits.map(p => `
+      <div class="phrase">
+        <div class="txt">
+          <div class="en">${hl(p[1], q)}</div>
+          <div class="es-t">${hl(p[0], q)}</div>
+          ${p[2] ? `<div class="tip">💡 ${hl(p[2], q)}</div>` : ''}
+        </div>
+        <div class="btns">
+          ${btn('say', '🔊', 'Escuchar', p[1].split(' / ')[0].replace(/\[|\]/g, ''))}
+          ${btn('copy', '📋', 'Copiar', p[1])}
+        </div>
+      </div>`).join('');
+  }
+  $('body-phrases').innerHTML = html;
+  finish('phrases', shown, total, 'frases');
+}
+
+function finish(name, n, total, noun) {
+  $('count-' + name).textContent = `${n} de ${total} ${noun}`;
+  $('empty-' + name).style.display = n ? 'none' : 'block';
+  const t = $('table-' + name);
+  if (t) t.style.display = n ? '' : 'none';
+}
+
+const RENDER = { irregular: renderIrregular, regular: renderRegular, phrases: renderPhrases, grammar: () => {} };
+
+/* ---------- EVENTOS ---------- */
+document.querySelectorAll('[data-search]').forEach(input =>
+  input.addEventListener('input', () => RENDER[input.dataset.search](norm(input.value.trim()))));
+
+$('chips-regular').addEventListener('click', e => {
+  const c = e.target.closest('.chip');
+  if (!c) return;
+  regularGroup = c.dataset.g;
+  document.querySelectorAll('#chips-regular .chip').forEach(x =>
+    x.setAttribute('aria-pressed', String(x === c)));
+  renderRegular(norm(document.querySelector('[data-search="regular"]').value.trim()));
+});
+
+const queryOf = name => norm(document.querySelector(`[data-search="${name}"]`).value.trim());
+
+function setTense(t) {
+  tense = t;
+  const fut = t === 'future';
+  document.querySelectorAll('.seg-btn').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.tense === t)));
+  $('practice-label').hidden = fut;
+  $('reveal').hidden = fut || !$('practice').checked;
+  $('chips-regular').hidden = fut;
+  $('rules').hidden = fut;
+  $('sub-regular').hidden = fut;
+  $('future-note-irregular').hidden = !fut;
+  $('future-note-regular').hidden = !fut;
+  $('table-irregular').classList.toggle('hide-forms', !fut && $('practice').checked);
+  renderIrregular(queryOf('irregular'));
+  renderRegular(queryOf('regular'));
+  try { localStorage.setItem('tense', t); } catch (e) {}
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('.seg-btn');
+  if (b) setTense(b.dataset.tense);
+});
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t =>
+    t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== 'panel-' + name);
+  try { localStorage.setItem('tab', name); } catch (e) {}
+  const s = document.querySelector(`[data-search="${name}"]`);
+  if (s) s.focus({ preventScroll: true });
+}
+document.querySelector('.tabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab');
+  if (t) showTab(t.dataset.tab);
+});
+
+$('practice').addEventListener('change', e => {
+  $('table-irregular').classList.toggle('hide-forms', e.target.checked);
+  $('reveal').hidden = !e.target.checked;
+  document.querySelectorAll('td.f.shown').forEach(td => td.classList.remove('shown'));
+});
+$('reveal').addEventListener('click', () =>
+  document.querySelectorAll('#table-irregular td.f').forEach(td => td.classList.add('shown')));
+
+document.addEventListener('click', e => {
+  const s = e.target.closest('.say');
+  if (s) return say(s.dataset.t);
+  const c = e.target.closest('.copy');
+  if (c) {
+    navigator.clipboard?.writeText(c.dataset.t).then(() => {
+      c.textContent = '✅';
+      setTimeout(() => c.textContent = '📋', 1200);
+    });
+    return;
+  }
+  const f = e.target.closest('#table-irregular td.f');
+  if (f) f.classList.toggle('shown');
+});
+
+const tabsEl = document.querySelector('.tabs');
+const setTabsH = () => document.documentElement.style.setProperty('--tabs-h', tabsEl.offsetHeight + 'px');
+setTabsH();
+window.addEventListener('resize', setTabsH);
+
+const toTop = $('to-top');
+window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 300), { passive: true });
+toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+renderIrregular(''); renderRegular(''); renderPhrases('');
+try {
+  if (localStorage.getItem('tense') === 'future') setTense('future');
+  const saved = localStorage.getItem('tab');
+  if (saved && RENDER[saved]) showTab(saved);
+} catch (e) {}
+</script>
+</body>
+</html>
